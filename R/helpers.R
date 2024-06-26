@@ -96,7 +96,7 @@ hierarchy_matrix_reduce_obs <- function(xmat, k, steps){
   obs_df_list <- list(xmat_long_obs)
   i <- 1
   for (l in (length(k)-1):1){
-    p_mat <- t(sapply(str_split(unlist(obs_df_list[[i]]$hid), "-"), function(x) {
+    p_mat <- t(sapply(stringr::str_split(unlist(obs_df_list[[i]]$hid), "-"), function(x) {
       x <- as.numeric(x)
       if (x[1] == 1)
         return(c(0,0))
@@ -135,7 +135,7 @@ hierarchy_matrix_augment_obs <- function(xmat, k, obs_mat){
   obs_df_list <- list(obs_mat_long)
   i <- 1
   for (l in (length(k)-1):1){
-    p_mat <- t(sapply(str_split(unlist(obs_df_list[[i]]$hid), "-"), function(x) {
+    p_mat <- t(sapply(stringr::str_split(unlist(obs_df_list[[i]]$hid), "-"), function(x) {
       x <- as.numeric(x)
       if (x[1] == 1)
         return(c(0,0))
