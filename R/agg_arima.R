@@ -284,7 +284,7 @@ update.agg_arima <-
   function(object, newdata, fix = c("model", "order")) {
     fix <- match.arg(fix)
 
-    object$x <- Map(bind_rows, object$x, newdata)
+    object$x <- Map(rbind, object$x, newdata)
     if (fix == "model") {
       object$models <- sapply(seq_along(object$models), function(i) {
         fmla_x <- extract_formula(object$formula, object$x[[i]])
@@ -325,12 +325,12 @@ update.agg_arima <-
 #' @export
 predict.agg_arima <- function(object, h=1, partial=TRUE, newxreg=NULL){
   k <- object$k
-  max_indices <- unlist(lapply(object$x, function(xi)
-    max(xi$index)))
+  max_index <- max(object$x[[1]]$index)
   # diffs <- c(1, diff(max_indices))
   # diffs_mod <- diffs %% k
 
-  diffs_mod <- c(1,max_indices[-1]-max_indices[1]) %/% c(k[-1]/k[-length(k)],1)
+  # diffs_mod <- c(1,max_indices[-1]-max_indices[1]) %/% c(k[-1]/k[-length(k)],1)
+  diffs_mod <- unlist(lapply(object$x, function(xi) nrow(xi[xi$index>max_index, ])))
 
   # check what the horizon is
   if (length(h) > 1){
