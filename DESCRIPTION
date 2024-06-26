@@ -15,7 +15,8 @@ Imports:
   reshape2,
   ExtDist,
   glasso,
-  Matrix
+  Matrix,
+  stringr
 Suggests:
   thief,
   Mcomp,
