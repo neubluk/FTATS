@@ -294,8 +294,10 @@ reconcile_forecasts <- function(y,
   }
 
   if (is.null(G) & is.null(SG)){
-    yhat_tilde <- NA
-    yhat_test_tilde <- NA
+    yhat_tilde <- matrix(NA, nrow=nrow(yhat), ncol=ncol(yhat))
+    if (!is.null(yhat_test)) {
+      yhat_test_tilde <- matrix(NA, nrow=nrow(yhat_test), ncol=ncol(yhat_test))
+    }
   } else {
     if (is.null(SG)) SG <- S %*% G
     yhat_tilde <- t(SG %*% t(yhat))
