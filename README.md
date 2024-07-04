@@ -4,7 +4,7 @@ Forecasting Temporally Aggregated Time Series
 
 [![Licence](https://img.shields.io/badge/licence-GPL--3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-This R package features the essential functions from [Neubauer and Filzmoser (2024)](arxiv). Exported functions are
+This R package features the essential functions from [Neubauer and Filzmoser (2024)](http://arxiv.org/abs/2407.02367). Exported functions are
 
 - `fit_agg_arima`: Fit fixed or automatically selected ARIMA models to a temporal hierarchy.
 - `reconcile_forecasts`: Reconcile base forecasts with reconciliation method of choice.
