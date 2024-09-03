@@ -350,7 +350,7 @@ predict.agg_arima <- function(object, h=1, partial=TRUE, newxreg=NULL){
       })
     }
     newxregg <- if (diffs_mod[i] > 0) {
-      newxreg[[i]][-(1:diffs_mod[i]), ]
+      newxreg[[i]][-(1:diffs_mod[i]), , drop=FALSE]
     } else {
       newxreg[[i]]
     }
@@ -393,13 +393,15 @@ predict.agg_arima <- function(object, h=1, partial=TRUE, newxreg=NULL){
 #'
 #' @param object result of fit_agg_arima
 #' @param h horizon used to internally compute fitted values
+#' @param simplify simplify the computation of fitted values with computing time in mind (if TRUE then only h-step forecasts are computed on each level. if FALSE, then 1:(kh) step forecasts are computed for aggregation k)
 #' @return list of data.frames with variables index and x
 #' @import forecast
 #' @method fitted agg_arima
 #' @export
-fitted.agg_arima <- function(object, h=1){
+fitted.agg_arima <- function(object, h=1, simplify=FALSE){
   stopifnot(h>=1)
   lapply(seq_along(object$models), function(i){
+    if (simplify == TRUE) return(data.frame(index = object$x[[i]]$index, x = as.numeric(fitted(object$models[[i]], h))))
     if (object$k[i] > 1){
       s <- object$k[i]*(h-1) + 1
       fi <- sapply(s:(object$k[i]*h),function(hi){
@@ -412,6 +414,54 @@ fitted.agg_arima <- function(object, h=1){
     }
     data.frame(index = object$x[[i]]$index, x = fi)
   })
+}
+#' Obtain fitted values for agg. ARIMA models in a more efficient way
+#'
+#' @param object result of fit_agg_arima
+#' @param steps number of new data steps steps for each level of the hierarchy. Useful to incorporate on-line data.
+#' @param h horizon used to internally compute fitted values (only h=1 allowed so far)
+#' @return list of data.frames with variables index and x
+#' @import forecast
+#' @method fitted agg_arima
+#' @export
+fitted2 <- function(object, steps, h=1){
+  UseMethod("fitted2",object)
+}
+
+fitted2.agg_arima <- function(object, steps, h=1){
+  stopifnot(h==1)
+  fits <- object
+  x <- fits$x
+  k <- fits$k
+  now_fvs <- lapply(x, function(xi) xi[, c("index","x")])
+  for (i in seq_along(steps)){
+    #if (steps[length(steps)-i+1] == 0) next
+    i2 <- length(x)-i+1
+    # now_ind <- seq(sind + timestep + steps[length(steps)-i+1], length.out=nrow(x[[1]])-1, by=k[length(k)])
+    now_ind <- seq(k[i2] + steps[length(steps)-i+1], length.out=nrow(x[[1]])-1, by=k[i2])
+    new_fcs <- sapply(now_ind,
+                      function(j){
+
+                        if (steps[length(steps)-i+1] > 0) {
+                          obs <- x[[i2]]$x[(j-steps[length(steps)-i+1]+1):j]
+                        } else {
+                          obs <- numeric(0)
+                        }
+
+                        fcs <- predict(forecast::Arima(x[[i2]]$x[1:j],
+                                                       model = fits$models[[i2]],
+                                                       xreg = x[[i2]]$reg[1:j, , drop=FALSE]),
+                                       n.ahead = k[i2] - steps[length(steps) - i + 1],
+                                       newxreg = x[[i2]]$reg[(j+1):(j+k[i2] - steps[length(steps) - i + 1]), , drop=FALSE])$pred
+
+                        c(obs,fcs)
+                      })
+
+    now_fvs[[i2]]$x[(1:k[i2])] <- NA
+    now_fvs[[i2]]$x[-(1:k[i2])] <- as.numeric(new_fcs)
+  }
+
+  return(now_fvs)
 }
 
 #' update_and_predict
