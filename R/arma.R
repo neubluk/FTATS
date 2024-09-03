@@ -13,7 +13,7 @@ sim_arma <- function(n, phi=NULL, theta=NULL, Phi=NULL, Theta=NULL, m=1, sigma.s
   return(x)
 }
 
-sim_agg_arma <- function(n, k, phi=NULL, theta=NULL, Phi=NULL, Theta=NULL, m=1, effects=NULL, sigma.sq=1){
+sim_agg_arma <- function(n, k, phi=NULL, theta=NULL, Phi=NULL, Theta=NULL, m=1, bottom_mean = 0, effects=NULL, sigma.sq=1){
   nbottom <- n*k[length(k)]
 
   x <- sim_arma(nbottom, phi=phi, theta=theta, Phi=Phi, Theta=Theta, m=m, sigma.sq=sigma.sq)
@@ -22,6 +22,8 @@ sim_agg_arma <- function(n, k, phi=NULL, theta=NULL, Phi=NULL, Theta=NULL, m=1, 
     #stopifnot(length(effects) == m)
     x <- x + rep(effects, nbottom/length(effects))
   }
+
+  x <- x + bottom_mean
 
   aggs <- sapply(k, function(ki) {
     w <- k[length(k)] / ki
