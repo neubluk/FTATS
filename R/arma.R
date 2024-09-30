@@ -62,21 +62,28 @@ plot.agg_ts <- function(object, type=c("ts","acf","pacf"), ...){
   k2 <- rev(cumprod(rev(k[-1]/k[-length(k)])))
 
   if (type == "ts") {
-    data <- bind_rows(sapply(seq_along(object), function(i) {
+    data <- do.call(rbind,sapply(seq_along(object), function(i) {
       object[[i]]$level <- i
       if (i < length(object)) {
         object[[i]]$index <- object[[i]]$index - k2[i] + 1
-        object[[i]] <- rbind(object[[i]],
-                             data.frame(index=max(object[[i]]$index) + k2[i] -1,
-                                        x=tail(object[[i]]$x,n=1),
-                                        level=i))
+        last_obs_complete <- tail(object[[i]],n=1)
+        last_obs_complete$index <- max(object[[i]]$index) + k2[i] -1
+        last_obs_complete$level <- i
+        object[[i]] <- rbind(object[[i]],last_obs_complete)
       }
       return(data.frame(object[[i]]))
     }, simplify = FALSE))
 
+
+    params <- list(...)
+    if (!is.null(params$xvar)){
+      xvar <- params$xvar
+    } else {
+      xvar <- "index"
+    }
     if (is.null(data$fc)) {
       p <- ggplot(mapping = aes(
-        x = index,
+        x = .data[[xvar]],
         y = x,
         linetype = factor(level)
       ))
@@ -90,7 +97,7 @@ plot.agg_ts <- function(object, type=c("ts","acf","pacf"), ...){
       p <-
         ggplot(
           mapping = aes(
-            x = index,
+            x = .data[[xvar]],
             y = x,
             linetype = factor(level),
             color = fc,
