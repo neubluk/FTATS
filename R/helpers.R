@@ -1,15 +1,26 @@
 construct_S_matrix <- function(k){
-  do.call(rbind, sapply(k, function(ki) kronecker(diag(1,ki,ki), t(rep(1,k[length(k)]/ki)))))
+  if (length(k)>1){
+    S <- do.call(rbind, sapply(k, function(ki) kronecker(diag(1,ki,ki), t(rep(1,k[length(k)]/ki)))))
+  } else {
+    S <- 1
+  }
+  return(S)
 }
 
 hierarchy_list_to_matrix <- function(xlist, k, index_pos=1, value_pos=2){
   max_nrow <- max(sapply(seq_along(xlist), function(i) ceiling(nrow(xlist[[i]])/k[i])))
-  mat <- do.call(cbind,
-                 sapply(seq_along(xlist), function(i) {
+  tmp <- sapply(seq_along(xlist), function(i) {
                    x <- xlist[[i]][[value_pos]]
                    length(x) <- max_nrow*k[i]
                    matrix(x, ncol = k[i], byrow = TRUE, dimnames = list(NULL, paste(i,1:k[i],sep="-")))
-                 }))
+                 })
+
+  if (length(k) > 1){
+    mat <- do.call(cbind, tmp)
+  } else {
+    mat <- as.matrix(tmp)
+  }
+
   if (nrow(xlist[[1]]) > 0){
     rownames(mat) <- seq(xlist[[1]][[index_pos]][1], length.out=nrow(mat), by=k[length(k)])
   } else {
@@ -168,4 +179,24 @@ hierarchy_matrix_augment_obs <- function(xmat, k, obs_mat){
   resmat[rowSums(is.na(resmat))>0, ] <- NA
 
   return(resmat)
+}
+
+set_negative_to_zero <- function(x, k){
+  xl <- FTATS:::hierarchy_matrix_to_list(x, k,drop_na = FALSE)
+  x2 <- x
+  for (i in rev(seq_along(xl))){
+    ki <- k[1:i]
+    Si <- construct_S_matrix(ki)
+
+    xl[[i]]$x <-
+      ifelse(xl[[i]]$x < 0,
+             abs(xl[[i]]$x),
+             0)
+
+    if (i<length(k)) xl <- xl[-(i+1)]
+
+    x_sntz <- FTATS:::hierarchy_list_to_matrix(xl, ki)
+    x2[, 1:sum(ki)] <- x2[, 1:sum(ki)] + t(Si %*% tail(t(x_sntz), ki[length(ki)]))
+  }
+  return(x2)
 }
