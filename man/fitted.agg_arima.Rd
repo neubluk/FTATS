@@ -4,12 +4,14 @@
 \alias{fitted.agg_arima}
 \title{Obtain fitted values for agg. ARIMA models}
 \usage{
-\method{fitted}{agg_arima}(object, h = 1)
+\method{fitted}{agg_arima}(object, h = 1, simplify = FALSE)
 }
 \arguments{
 \item{object}{result of fit_agg_arima}
 
 \item{h}{horizon used to internally compute fitted values}
+
+\item{simplify}{simplify the computation of fitted values with computing time in mind (if TRUE then only h-step forecasts are computed on each level. if FALSE, then 1:(kh) step forecasts are computed for aggregation k)}
 }
 \value{
 list of data.frames with variables index and x
