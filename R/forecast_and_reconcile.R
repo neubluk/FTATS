@@ -134,7 +134,7 @@ forecast_and_reconcile <- function(formula,
   if (t0 == t1) {
     # do recon. in-sample
     y <- hierarchy_list_to_matrix(data_train, k)
-    yhat <- hierarchy_list_to_matrix(fitted(fits, h=h), k)
+    yhat <- hierarchy_list_to_matrix(fitted2(fits, h=h), k)
 
     yhat[rowSums(is.na(yhat))>0, ] <- NA
 
