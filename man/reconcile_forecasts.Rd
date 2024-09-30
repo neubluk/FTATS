@@ -18,6 +18,7 @@ reconcile_forecasts(
   G = NULL,
   SG = NULL,
   full_cov = NULL,
+  sntz = FALSE,
   ...
 )
 }

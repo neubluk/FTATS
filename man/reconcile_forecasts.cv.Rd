@@ -15,6 +15,7 @@ reconcile_forecasts.cv(
   ytest = NULL,
   full_cov = NULL,
   S = NULL,
+  test_recon_cum = FALSE,
   err_measure = function(x, xtilde) mean((x - xtilde)^2),
   ...
 )
@@ -39,6 +40,8 @@ reconcile_forecasts.cv(
 \item{full_cov}{if not given, it is estimated using data y and yhat}
 
 \item{S}{summing matrix. if not given, it is computed according to k}
+
+\item{test_recon_cum}{should the reonciliation method be re-estimated cumulatively on the test data (T/F)?}
 
 \item{err_measure}{error function f(x,xtilde) to be minimized and choose optimal hyperparameters. default MSE.}
 

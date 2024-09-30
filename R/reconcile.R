@@ -55,6 +55,7 @@ reconcile_forecasts <- function(y,
                                 G=NULL,
                                 SG=NULL,
                                 full_cov=NULL,
+                                sntz = FALSE,
                                 ...){
 
   #stopifnot(ncol(y) == ncol(yhat) & ncol(y) == nrow(S) & nrow(S) == sum(k))
@@ -120,7 +121,7 @@ reconcile_forecasts <- function(y,
         if (!is.null(params$lambda)) {
           if (length(params$lambda) == 1) {
             cov_est <-
-              (1 - params$lambda) * full_cov_est + params$lambda * diag(1, ncol(full_cov_est), ncol(full_cov_est))
+              (1 - params$lambda) * full_cov_est + params$lambda * var_diag#diag(1, ncol(full_cov_est), ncol(full_cov_est))
           } else {
             #do cv
             tune_grid <-
@@ -140,7 +141,8 @@ reconcile_forecasts <- function(y,
                                           test_recon_cum = test_recon_cum,
                                           full_cov = full_cov,
                                           S=S,
-                                          err_measure = err_measure))
+                                          err_measure = err_measure,
+                                          sntz = sntz))
           }
         }
       }
@@ -208,15 +210,18 @@ reconcile_forecasts <- function(y,
                                           test_recon_cum = test_recon_cum,
                                           full_cov = full_cov,
                                           S=S,
-                                          err_measure = err_measure))
+                                          err_measure = err_measure,
+                                          sntz = sntz))
           }
         }
       }
       else if (cov_type == "corr_shrink") {
         if (!is.null(params$lambda)) {
           if (length(params$lambda) == 1) {
+            full_corr <- cov2cor(full_cov_est)
+            full_corr[is.na(full_corr)] <- 0
             full_corr_shrink <-
-              (1 - params$lambda) * cov2cor(full_cov_est) + params$lambda * diag(1, ncol(full_cov_est))
+              (1  -  params$lambda) * full_corr  + params$lambda * diag(1, ncol(full_cov_est))
             cov_est <-
               sqrt(var_diag) %*% full_corr_shrink %*% sqrt(var_diag)
           } else {
@@ -238,7 +243,8 @@ reconcile_forecasts <- function(y,
                                           test_recon_cum = test_recon_cum,
                                           full_cov = full_cov,
                                           S=S,
-                                          err_measure = err_measure))
+                                          err_measure = err_measure,
+                                          sntz = sntz))
           }
         }
       }
@@ -247,8 +253,10 @@ reconcile_forecasts <- function(y,
             !is.null(params$neig)) {
           if (length(params$lambda) == 1 &
               length(params$neig) == 1) {
+            full_corr <- cov2cor(full_cov_est)
+            full_corr[is.na(full_corr)] <- 0
             full_corr_shrink <-
-              (1  -  params$lambda) * cov2cor(full_cov_est) + params$lambda * diag(1, ncol(full_cov_est))
+              (1  -  params$lambda) * full_corr  + params$lambda * diag(1, ncol(full_cov_est))
             eig_full_corr_shrink <- eigen(full_corr_shrink)
             W <-
               eig_full_corr_shrink$vectors[, 1:params$neig, drop = FALSE]
@@ -277,7 +285,8 @@ reconcile_forecasts <- function(y,
                                           test_recon_cum = test_recon_cum,
                                           full_cov = full_cov,
                                           S=S,
-                                          err_measure = err_measure))
+                                          err_measure = err_measure,
+                                          sntz = sntz))
           }
         }
       }
@@ -301,7 +310,13 @@ reconcile_forecasts <- function(y,
   } else {
     if (is.null(SG)) SG <- S %*% G
     yhat_tilde <- t(SG %*% t(yhat))
+
+    if (sntz == TRUE){
+      yhat_tilde <- set_negative_to_zero(yhat_tilde, k)
+    }
+
     colnames(yhat_tilde) <- colnames(yhat)
+
     if (!is.null(yhat_test)) {
 
       if (test_recon_cum == TRUE & nrow(yhat_test) > 1){
@@ -332,6 +347,10 @@ reconcile_forecasts <- function(y,
                                  )$yhat_test_tilde)
       } else {
         yhat_test_tilde <- t(SG %*% t(yhat_test))
+      }
+
+      if (sntz == TRUE){
+        yhat_test_tilde <- set_negative_to_zero(yhat_test_tilde, k)
       }
 
       colnames(yhat_test_tilde) <- colnames(yhat_test)
@@ -392,6 +411,7 @@ reconcile_forecasts.cv <- function(y,
                                    ytest=NULL,
                                    full_cov=NULL,
                                    S=NULL,
+                                   test_recon_cum = FALSE,
                                    err_measure = function(x, xtilde) mean( (x-xtilde)^2),
                                    ...) {
 
@@ -415,7 +435,7 @@ reconcile_forecasts.cv <- function(y,
     cv_rel_resi <- sapply(seq_along(folds), function(i) {
       trfi <- folds[[i]]$train
       tefi <- folds[[i]]$test
-      tmp_res <- do.call(reconcile_forecasts,
+      tmp_res <- tryCatch(do.call(reconcile_forecasts,
                          c(
                            list(
                              y = y[trfi, , drop=FALSE],
@@ -426,11 +446,14 @@ reconcile_forecasts.cv <- function(y,
                              yhat_test = yhat[tefi, , drop=FALSE],
                              test_recon_cum = FALSE,
                              full_cov = full_cov,
-                             S=S
+                             S=S,
+                             ...
                            ),
                            par
-                         ))
-
+                         )),
+                         error=function(e){
+                           return(NULL)
+                         })
 
       if (is.null(tmp_res$G)) return(NA)
 
@@ -462,6 +485,7 @@ reconcile_forecasts.cv <- function(y,
                                    ytest = ytest,
                                    full_cov=full_cov,
                                    S=S,
+                                   test_recon_cum = test_recon_cum,
                                    ...
                                  ),
                                  opt_par
