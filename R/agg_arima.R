@@ -96,7 +96,7 @@ fit_agg_arima <- function(formula, x, k, orders=rep(NA,length(x)), seasonal=rep(
       } else {
         orders2 <- c(orders2,list(orders[[i]][3]))
         if (orders[[i]][3] >= 1){
-          fixed2 <- c(fixed2, list(fixed[[i]][orders[[i]][1] +(1:orders[[i]][3])]))
+          fixed2 <- c(fixed2, list(fixed[[i]][orders[[i]][1] + (1:orders[[i]][3])]))
         } else {
           fixed2 <- c(fixed2, list(NA))
         }
@@ -422,17 +422,19 @@ fitted.agg_arima <- function(object, h=1, simplify=FALSE){
 #' @param h horizon used to internally compute fitted values (only h=1 allowed so far)
 #' @return list of data.frames with variables index and x
 #' @import forecast
-#' @method fitted agg_arima
 #' @export
 fitted2 <- function(object, steps, h=1){
   UseMethod("fitted2",object)
 }
 
-fitted2.agg_arima <- function(object, steps, h=1){
+#' @method fitted2 agg_arima
+#' @export
+fitted2.agg_arima <- function(object, steps = rep(0, length(object$x)), h=1){
   stopifnot(h==1)
   fits <- object
   x <- fits$x
   k <- fits$k
+  k2 <- c(1,k[-1]/k[-length(k)])
   now_fvs <- lapply(x, function(xi) xi[, c("index","x")])
   for (i in seq_along(steps)){
     #if (steps[length(steps)-i+1] == 0) next
