@@ -1,6 +1,6 @@
 Package: FTATS
 Title: Forecasting Temporally Aggregated Time Series
-Version: 0.0.1
+Version: 1.0.0
 Authors@R: 
     person("Lukas", "Neubauer", , "lukas.neubauer@tuwien.ac.at", role = c("aut", "cre"))
 Description: ....

@@ -12,6 +12,16 @@ This R package features the essential functions from [Neubauer and Filzmoser (20
 - `forecast_and_reconcile`: Combines fitting ARIMA models and reconciling resulting base forecasts.
 
 ## Citation
+``` s
+@Manual{,
+    title = {Forecasting Temporally Aggregated Time Series},
+    author = {Lukas Neubauer},
+    year = {2024},
+    note = {R package version 1.0.0 to 'Rediscovering Bottom-Up: Effective Forecasting in Temporal Hierarchies'},
+    url = {https://github.com/neubluk/FTATS},
+    doi = {https://doi.org/10.48550/arXiv.2407.02367},
+  }
+```
 
 ## Installation
 

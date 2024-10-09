@@ -1,0 +1,9 @@
+bibentry(
+  bibtype  = "Manual",
+  title    = "Forecasting Temporally Aggregated Time Series",
+  author   = "Lukas Neubauer",
+  year     = "2024",
+  note = "R package version 1.0.0 to 'Rediscovering Bottom-Up: Effective Forecasting in Temporal Hierarchies'",
+  url = "https://github.com/neubluk/FTATS",
+  doi = "https://doi.org/10.48550/arXiv.2407.02367"
+)
