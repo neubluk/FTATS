@@ -57,3 +57,18 @@
 #' \item sold
 #' }
 "food_demand_daily"
+
+#' Solar Power Generation
+#'
+#' Simulated photovoltaic generation data per state and capacity in MW, on a 5-min basis for the year 2006.
+#'
+#' @format
+#' A data.frame of size 8,198,502 x 4 containing
+#' \itemize{
+#' \item State
+#' \item CapacityMW
+#' \item LocalTime
+#' \item Power
+#' }
+#' @source <https://www.nrel.gov/grid/solar-power-data.html>
+"spower"
