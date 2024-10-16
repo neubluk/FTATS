@@ -12,7 +12,7 @@ This R package features the essential functions from [Neubauer and Filzmoser (20
 - `forecast_and_reconcile`: Combines fitting ARIMA models and reconciling resulting base forecasts.
 
 An extension in v1.1.0 features the functionality from [Neubauer and Filzmoser (2024b)](http://arxiv.org/). Exported functions are
-- `reconcile_forecasts_partly': Reconcile partly observed base forecasts in order to perform forecast updating
+- `reconcile_forecasts_partly`: Reconcile partly observed base forecasts in order to perform forecast updating
 
 ## Citation
 ``` s
